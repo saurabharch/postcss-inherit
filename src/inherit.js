@@ -1,4 +1,8 @@
 const debug = require('debug')('postcss-inherit');
+const postcss = require('postcss')
+const fs = require('fs')
+const path = require('path')
+
 
 /**
  * Private: checks if a node is a decendant of an [AtRule](http://api.postcss.org/AtRule.html).
@@ -231,6 +235,7 @@ export default class Inherit {
   constructor(css, opts) {
     this.root = css;
     this.matches = {};
+    this.globalStyles = opts.globalStyles ? postcss.parse(fs.readFileSync(path.join(process.cwd(), opts.globalStyles), {encoding: 'utf-8'})) : null
     this.propertyRegExp = opts.propertyRegExp || /^(inherit|extend)s?:?$/i;
     this.root.walkAtRules('media', (atRule) => {
       this._atRuleInheritsFromRoot(atRule);
@@ -295,13 +300,19 @@ export default class Inherit {
     const targetSelector = value;
     let matched = false;
     let differentLevelMatched = false;
-    this.root.walkRules((rule) => {
+
+    this.globalStyles.walkRules((rule) => {
       if (_findInArray(_parseSelectors(rule.selector), _matchRegExp(targetSelector)) === -1) return;
       const targetRule = rule;
       const targetAtParams = targetRule.atParams || _isAtruleDescendant(targetRule);
       if (targetAtParams === originAtParams) {
-        debug('extend %j with %j', originSelector, targetSelector);
+        // console.log('extend %j with %j', originSelector, targetRule, targetSelector);
+        // console.log('targetRule', targetRule)
+        // console.log('before appending', targetRule.toString())
         _appendSelector(originSelector, targetRule, targetSelector);
+        const clone = targetRule.clone()
+        // console.log('after appending', clone.toString())
+        this.root.append(clone)
         matched = true;
       } else {
         differentLevelMatched = true;
