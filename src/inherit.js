@@ -265,7 +265,7 @@ export default class Inherit {
       _parseSelectors(importValue).forEach((value) => {
         const targetSelector = value;
         let newValue = value;
-        this.root.walkRules((rule) => {
+        this.globalStyles.walkRules((rule) => {
           if (!_matchRegExp(targetSelector).test(rule.selector)) return;
           const targetAtParams = _isAtruleDescendant(rule);
           if (!targetAtParams) {
