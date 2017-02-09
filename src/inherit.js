@@ -240,7 +240,6 @@ export default class Inherit {
     this.root.walkAtRules('media', (atRule) => {
       this._atRuleInheritsFromRoot(atRule);
     });
-    console.log(this.root.toString())
     this.root.walkAtRules(this.propertyRegExp, (importRule) => {
       const rule = importRule.parent;
       const importValue = _cleanParams(importRule.params);
