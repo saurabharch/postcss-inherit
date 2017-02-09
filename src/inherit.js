@@ -240,6 +240,7 @@ export default class Inherit {
     this.root.walkAtRules('media', (atRule) => {
       this._atRuleInheritsFromRoot(atRule);
     });
+    console.log(this.root.toString())
     this.root.walkAtRules(this.propertyRegExp, (importRule) => {
       const rule = importRule.parent;
       const importValue = _cleanParams(importRule.params);
@@ -306,13 +307,22 @@ export default class Inherit {
       const targetRule = rule;
       const targetAtParams = targetRule.atParams || _isAtruleDescendant(targetRule);
       if (targetAtParams === originAtParams) {
-        // console.log('extend %j with %j', originSelector, targetRule, targetSelector);
-        // console.log('targetRule', targetRule)
-        // console.log('before appending', targetRule.toString())
         _appendSelector(originSelector, targetRule, targetSelector);
+        // clone only here as the rule is not in the current tree
         const clone = targetRule.clone()
-        // console.log('after appending', clone.toString())
         this.root.append(clone)
+        matched = true;
+      } else {
+        differentLevelMatched = true;
+      }
+    });
+
+    this.root.walkRules((rule) => {
+      if (_findInArray(_parseSelectors(rule.selector), _matchRegExp(targetSelector)) === -1) return;
+      const targetRule = rule;
+      const targetAtParams = targetRule.atParams || _isAtruleDescendant(targetRule);
+      if (targetAtParams === originAtParams) {
+        _appendSelector(originSelector, targetRule, targetSelector);
         matched = true;
       } else {
         differentLevelMatched = true;
